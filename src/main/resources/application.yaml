@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: uber
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/rideshare
+
+app:
+  jwt:
+    secret: mySecretKeyForJWTTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm
+    expiration-ms: 3600000
+
+server:
+  port: 8081

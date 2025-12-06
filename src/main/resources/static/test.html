@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RideShare API Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .response {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .success {
+            border-left-color: #4caf50;
+            background: #e8f5e9;
+        }
+        
+        .error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        
+        .tokens-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+        
+        .token-item {
+            background: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .token-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .token-username {
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .token-role {
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        
+        .token-value {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #666;
+            word-break: break-all;
+            margin-top: 5px;
+        }
+        
+        .clear-btn {
+            background: #f44336;
+            margin-top: 10px;
+        }
+        
+        .use-token-btn {
+            background: #4caf50;
+            padding: 5px 10px;
+            font-size: 12px;
+            width: auto;
+            margin-left: 10px;
+        }
+        
+        .current-token {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚕 RideShare API Tester</h1>
+        
+        <!-- Current Token Section -->
+        <div class="section">
+            <h2>🔑 Current Active Token</h2>
+            <div class="current-token" id="currentToken">
+                <strong>No token active</strong> - Login to get a token
+            </div>
+            <button onclick="clearCurrentToken()">Clear Current Token</button>
+        </div>
+        
+        <!-- Authentication Section -->
+        <div class="section">
+            <h2>🔐 Authentication</h2>
+            <div class="grid">
+                <div>
+                    <h3>Register</h3>
+                    <div class="form-group">
+                        <label>Username:</label>
+                        <input type="text" id="regUsername" placeholder="john">
+                    </div>
+                    <div class="form-group">
+                        <label>Password:</label>
+                        <input type="password" id="regPassword" placeholder="1234">
+                    </div>
+                    <div class="form-group">
+                        <label>Role:</label>
+                        <select id="regRole">
+                            <option value="ROLE_USER">ROLE_USER</option>
+                            <option value="ROLE_DRIVER">ROLE_DRIVER</option>
+                        </select>
+                    </div>
+                    <button onclick="register()">Register</button>
+                    <div class="response" id="registerResponse"></div>
+                </div>
+                
+                <div>
+                    <h3>Login</h3>
+                    <div class="form-group">
+                        <label>Username:</label>
+                        <input type="text" id="loginUsername" placeholder="john">
+                    </div>
+                    <div class="form-group">
+                        <label>Password:</label>
+                        <input type="password" id="loginPassword" placeholder="1234">
+                    </div>
+                    <button onclick="login()">Login</button>
+                    <div class="response" id="loginResponse"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- All Generated Tokens -->
+        <div class="section tokens-section">
+            <h2>📋 All Generated Tokens</h2>
+            <button class="clear-btn" onclick="clearAllTokens()">Clear All Tokens</button>
+            <div id="tokensList"></div>
+        </div>
+        
+        <!-- Ride Operations -->
+        <div class="section">
+            <h2>🚗 Ride Operations</h2>
+            <div class="grid">
+                <div>
+                    <h3>Create Ride (USER)</h3>
+                    <div class="form-group">
+                        <label>Pickup Location:</label>
+                        <input type="text" id="pickupLocation" placeholder="Koramangala">
+                    </div>
+                    <div class="form-group">
+                        <label>Drop Location:</label>
+                        <input type="text" id="dropLocation" placeholder="Indiranagar">
+                    </div>
+                    <button onclick="createRide()">Create Ride</button>
+                    <div class="response" id="createRideResponse"></div>
+                </div>
+                
+                <div>
+                    <h3>Get My Rides (USER)</h3>
+                    <button onclick="getMyRides()">Get My Rides</button>
+                    <div class="response" id="myRidesResponse"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Driver Operations -->
+        <div class="section">
+            <h2>👨‍✈️ Driver Operations</h2>
+            <div class="grid">
+                <div>
+                    <h3>View Pending Requests</h3>
+                    <button onclick="getPendingRides()">Get Pending Rides</button>
+                    <div class="response" id="pendingRidesResponse"></div>
+                </div>
+                
+                <div>
+                    <h3>Accept Ride</h3>
+                    <div class="form-group">
+                        <label>Ride ID:</label>
+                        <input type="text" id="acceptRideId" placeholder="Enter ride ID">
+                    </div>
+                    <button onclick="acceptRide()">Accept Ride</button>
+                    <div class="response" id="acceptRideResponse"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Complete Ride -->
+        <div class="section">
+            <h2>✅ Complete Ride</h2>
+            <div class="form-group">
+                <label>Ride ID:</label>
+                <input type="text" id="completeRideId" placeholder="Enter ride ID">
+            </div>
+            <button onclick="completeRide()">Complete Ride</button>
+            <div class="response" id="completeRideResponse"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8081';
+        
+        // Load tokens on page load
+        window.onload = function() {
+            loadTokens();
+            loadCurrentToken();
+        };
+        
+        // Register
+        async function register() {
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const role = document.getElementById('regRole').value;
+            const responseDiv = document.getElementById('registerResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password, role })
+                });
+                
+                const text = await response.text();
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ Success! User registered.\nStatus: ${response.status}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ Error: ${text}\nStatus: ${response.status}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        // Login
+        async function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const responseDiv = document.getElementById('loginResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ Login successful!\nToken: ${data.token}\nUsername: ${data.username}\nRole: ${data.role}`;
+                    
+                    // Store token
+                    saveToken(data.token, data.username, data.role);
+                    setCurrentToken(data.token);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ Error: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        // Save token to localStorage
+        function saveToken(token, username, role) {
+            let tokens = JSON.parse(localStorage.getItem('jwtTokens') || '[]');
+            const tokenData = {
+                token,
+                username,
+                role,
+                timestamp: new Date().toISOString()
+            };
+            tokens.push(tokenData);
+            localStorage.setItem('jwtTokens', JSON.stringify(tokens));
+            loadTokens();
+        }
+        
+        // Load and display all tokens
+        function loadTokens() {
+            const tokens = JSON.parse(localStorage.getItem('jwtTokens') || '[]');
+            const tokensList = document.getElementById('tokensList');
+            
+            if (tokens.length === 0) {
+                tokensList.innerHTML = '<p>No tokens generated yet. Login to generate tokens.</p>';
+                return;
+            }
+            
+            tokensList.innerHTML = tokens.map((tokenData, index) => `
+                <div class="token-item">
+                    <div class="token-header">
+                        <span class="token-username">${tokenData.username}</span>
+                        <span class="token-role">${tokenData.role}</span>
+                        <button class="use-token-btn" onclick="setCurrentToken('${tokenData.token}')">Use This Token</button>
+                    </div>
+                    <div class="token-value">${tokenData.token}</div>
+                    <small style="color: #999;">Generated: ${new Date(tokenData.timestamp).toLocaleString()}</small>
+                </div>
+            `).join('');
+        }
+        
+        // Set current token
+        function setCurrentToken(token) {
+            localStorage.setItem('currentToken', token);
+            loadCurrentToken();
+        }
+        
+        // Load current token
+        function loadCurrentToken() {
+            const token = localStorage.getItem('currentToken');
+            const currentTokenDiv = document.getElementById('currentToken');
+            
+            if (token) {
+                const tokens = JSON.parse(localStorage.getItem('jwtTokens') || '[]');
+                const tokenData = tokens.find(t => t.token === token);
+                if (tokenData) {
+                    currentTokenDiv.innerHTML = `
+                        <strong>Active Token:</strong><br>
+                        <span style="color: #2196f3;">User: ${tokenData.username} (${tokenData.role})</span><br>
+                        <span class="token-value" style="margin-top: 5px;">${token}</span>
+                    `;
+                } else {
+                    currentTokenDiv.innerHTML = `<strong>Token:</strong><br><span class="token-value">${token}</span>`;
+                }
+            } else {
+                currentTokenDiv.innerHTML = '<strong>No token active</strong> - Login to get a token';
+            }
+        }
+        
+        // Clear current token
+        function clearCurrentToken() {
+            localStorage.removeItem('currentToken');
+            loadCurrentToken();
+        }
+        
+        // Clear all tokens
+        function clearAllTokens() {
+            if (confirm('Are you sure you want to clear all tokens?')) {
+                localStorage.removeItem('jwtTokens');
+                localStorage.removeItem('currentToken');
+                loadTokens();
+                loadCurrentToken();
+            }
+        }
+        
+        // Get current token for API calls
+        function getCurrentToken() {
+            return localStorage.getItem('currentToken');
+        }
+        
+        // Create Ride
+        async function createRide() {
+            const token = getCurrentToken();
+            if (!token) {
+                alert('Please login first to get a token!');
+                return;
+            }
+            
+            const pickupLocation = document.getElementById('pickupLocation').value;
+            const dropLocation = document.getElementById('dropLocation').value;
+            const responseDiv = document.getElementById('createRideResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/rides`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ pickupLocation, dropLocation })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ Ride created!\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ Error: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        // Get My Rides
+        async function getMyRides() {
+            const token = getCurrentToken();
+            if (!token) {
+                alert('Please login first to get a token!');
+                return;
+            }
+            
+            const responseDiv = document.getElementById('myRidesResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/user/rides`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ My Rides:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ Error: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        // Get Pending Rides (Driver)
+        async function getPendingRides() {
+            const token = getCurrentToken();
+            if (!token) {
+                alert('Please login as a driver first!');
+                return;
+            }
+            
+            const responseDiv = document.getElementById('pendingRidesResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/driver/rides/requests`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ Pending Rides:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ Error: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        // Accept Ride
+        async function acceptRide() {
+            const token = getCurrentToken();
+            if (!token) {
+                alert('Please login as a driver first!');
+                return;
+            }
+            
+            const rideId = document.getElementById('acceptRideId').value;
+            const responseDiv = document.getElementById('acceptRideResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/driver/rides/${rideId}/accept`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ Ride accepted!\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ Error: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        // Complete Ride
+        async function completeRide() {
+            const token = getCurrentToken();
+            if (!token) {
+                alert('Please login first!');
+                return;
+            }
+            
+            const rideId = document.getElementById('completeRideId').value;
+            const responseDiv = document.getElementById('completeRideResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/rides/${rideId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ Ride completed!\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ Error: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
+
